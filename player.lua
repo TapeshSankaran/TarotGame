@@ -56,17 +56,7 @@ function Player:drawCard()
     
   end
   
-  -- Cardwidth + permittedd distance between cards --
-  local cardWidth = img_width*scale+120/(4*#self.hand)
-  
-  -- Space cards apart properly --
-  for i, card in ipairs(self.hand) do
-    card.owner = self
-    card.position = Vector(
-      self.position.x+cardWidth*#self.hand*0.5-cardWidth*i,
-      self.position.y
-    )
-  end
+  self:respaceCards()
 end
 
 function Player:addCard(card)
@@ -85,17 +75,7 @@ function Player:addCard(card)
     
   end
   
-  -- Cardwidth + permittedd distance between cards --
-  local cardWidth = img_width*scale+120/(4*#self.hand)
-  
-  -- Space cards apart properly --
-  for i, card in ipairs(self.hand) do
-    card.owner = self
-    card.position = Vector(
-      self.position.x+cardWidth*#self.hand*0.5-cardWidth*i,
-      self.position.y
-    )
-  end
+  self:respaceCards()
 end
 
 function Player:playCard(index)
@@ -103,6 +83,7 @@ function Player:playCard(index)
     if card and tonumber(card.cost) <= self.mana then
         self.mana = self.mana - card.cost
         table.remove(self.hand, index)
+        self:respaceCards()
         return card
     end
     return nil
@@ -118,6 +99,20 @@ function Player:removeCard(index)
     return nil
 end
 
+function Player:respaceCards()
+  -- Cardwidth + permittedd distance between cards --
+  local cardWidth = img_width*scale+180/(4*#self.hand)
+  
+  -- Space cards apart properly --
+  for i, card in ipairs(self.hand) do
+    card.owner = self
+    card.position = Vector(
+      self.position.x+cardWidth*#self.hand*0.5-cardWidth*i,
+      self.position.y
+    )
+  end
+end
+
 function Player:draw()
   if self.name ~= "Opponent" then
     for _, card in ipairs(self.hand) do
@@ -125,16 +120,16 @@ function Player:draw()
     end
     self.deck:draw()
   end
-  love.graphics.setColor(COLORS.DARKER_GREEN)
+  love.graphics.setColor(COLORS.DARKER_GREEN:rgb())
   love.graphics.setFont(name_font)
   local y = self.name == "Opponent" and height*0.07 or -height*0.04
   --local x = self.name == "Opponent" and width*0.1 or width*0.9
 
   love.graphics.printf(self.name, 0, self.position.y+y, width, "center")
-  love.graphics.setColor(COLORS.BLUE)
-  love.graphics.printf("Mana: " .. self.mana, self.position.x-width*0.1, self.position.y+y, img_height, "right", 0, 1, 1, name_font:getWidth("Mana: " .. self.mana))
-  love.graphics.setColor(COLORS.DARK_GOLD)
-  love.graphics.printf("Points: " .. self.points, self.position.x+width*0.075, self.position.y+y, img_height*2, "left")
+  love.graphics.setColor(COLORS.BLUE:rgb())
+  love.graphics.printf("Mana: " .. self.mana, self.position.x-width*0.1, self.position.y+y, 64, "right", 0, 1, 1, name_font:getWidth("Mana: " .. self.mana))
+  love.graphics.setColor(COLORS.DARK_GOLD:rgb())
+  love.graphics.printf("Points: " .. self.points, self.position.x+width*0.075, self.position.y+y, 64*2, "left")
 end
 
 return Player

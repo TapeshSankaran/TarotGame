@@ -5,12 +5,12 @@ local Config = require "conf"
 
 ABILITIES = {
   
-  ["Wooden Cow"] = nil,
-  ["Pegasus"]    = nil,
-  ["Minotaur"]   = nil,
-  ["Titan"]      = nil,
+  ["Four of Cups"] = nil,
+  ["Three of Wands"]    = nil,
+  ["Two of Swords"]   = nil,
+  ["Ace of Pentacles"]      = nil,
   
-  ["Zeus"] = {
+  ["The Heirophant"] = {
     onReveal = function(card)
       local player = card.owner == game.player and game.opponent or game.player
       for _, c in ipairs(player.hand) do
@@ -19,7 +19,7 @@ ABILITIES = {
     end
   },
 
-  ["Ares"] = {
+  ["The Emperor"] = {
     onReveal = function(card)
       if card.field ~= nil then
         local slots = card.owner == game.player and card.field.opponent_slots or card.field.player_slots
@@ -28,14 +28,14 @@ ABILITIES = {
     end
   },
 
-  ["Medusa"] = {
+  ["The Hanged Man"] = {
     onPlay = function(card, c)
       print("hello")
       c.power = (tonumber(c.power) > 0 and c ~= card) and c.power - 1 or c.power
     end
   },
 
-  ["Cyclops"] = {
+  ["The Moon"] = {
     onReveal = function(card)
       local slots = card.owner == game.player and card.field.player_slots or card.field.opponent_slots
       local toRemove = {}
@@ -51,7 +51,7 @@ ABILITIES = {
     end
   },
 
-  ["Poseidon"] = {
+  ["The Devil"] = {
     onReveal = function(card)
       local enemy_slots = card.owner == game.player and card.field.opponent_slots or card.field.player_slots
       local weakest, index = nil, nil
@@ -68,7 +68,7 @@ ABILITIES = {
     end
   },
 
-  ["Artemis"] = {
+  ["The Hermit"] = {
     onReveal = function(card)
       local enemy_slots = card.owner == game.player and card.field.opponent_slots or card.field.player_slots
       if #enemy_slots == 1 then
@@ -77,7 +77,7 @@ ABILITIES = {
     end
   },
 
-  ["Hera"] = {
+  ["The Empress"] = {
     onReveal = function(card)
       for _, c in ipairs(card.owner.hand) do
         c.power = c.power + 1
@@ -85,25 +85,25 @@ ABILITIES = {
     end
   },
 
-  ["Demeter"] = {
+  ["The Fool"] = {
     onReveal = function(card)
       card.owner:drawCard()
       game.opponent:drawCard()
     end
   },
 
-  ["Hades"] = {
+  ["Death"] = {
     onReveal = function(card)
       card.power = card.power + #card.owner.discard_pile*2
     end
   },
 
-  ["Hercules"] = {
+  ["Strength"] = {
     onReveal = function(card)
       local slots = card.owner == game.player and card.field.player_slots or card.field.opponent_slots
       local strongest = card
       for _, c in ipairs(slots) do
-        if c.power > strongest.power then return end
+        if tonumber(c.power) > tonumber(strongest.power) then return end
       end
       if strongest == card then
         card.power = card.power * 2
@@ -111,47 +111,49 @@ ABILITIES = {
     end
   },
 
-  ["Dionysus"] = {
+  ["The Sun"] = {
     onReveal = function(card)
       local slots = card.owner == game.player and card.field.player_slots or card.field.opponent_slots
       card.power = card.power + (#slots - 1) * 2
     end
   },
 
-  ["Hermes"] = {
+  ["The Chariot"] = {
     onReveal = function(card)
       game.board:moveCard(card.owner, card)
     end
   },
 
-  ["Hydra"] = {
-    onDiscard = function(card)
-      local hydra = cardData[17]
-      local c = game:createCard(hydra, true)
-      card.owner:addCard(c)
-      card.owner:addCard(c)
+  ["The World"] = {
+    onReveal = function(card)
+      for _, card in ipairs(game.action) do
+        if card ~= nil then
+          card.faceUp = true
+        end 
+      end
+      game.action = {}
     end
   },
 
-  ["Ship of Theseus"] = {
+  ["Wheel of Fortune"] = {
     onReveal = function(card)
-      local ship_of_theseus = cardData[18]
-      ship_of_theseus = game:createCard(ship_of_theseus, true)
-      ship_of_theseus.owner = card.owner
-      ship_of_theseus.power = ship_of_theseus.power + 1
+      local wheel_of_fortune = cardData[18]
+      wheel_of_fortune = game:createCard(wheel_of_fortune, true)
+      wheel_of_fortune.owner = card.owner
+      wheel_of_fortune.power = wheel_of_fortune.power + 1
       card.owner:addCard(ship_of_theseus)
     end
   },
 
-  ["Sword of Damocles"] = {
+  ["Temperance"] = {
     onEoT = function(card)
-      if not card.field:isWinning(card.owner) then
-        card.power = card.power - 1
+      if card.field:isWinning(card.owner) and tonumber(card.power) < 16 then
+        card.power = card.power * 2
       end
     end
   },
 
-  ["Midas"] = {
+  ["Justice"] = {
     onReveal = function(card)
       local all = {}
       for _, c in ipairs(card.field.player_slots) do table.insert(all, c) end
@@ -162,7 +164,7 @@ ABILITIES = {
     end
   },
 
-  ["Aphrodite"] = {
+  ["The Lovers"] = {
     onReveal = function(card)
       local enemy_slots = card.owner == game.player and card.field.opponent_slots or card.field.player_slots
       for _, c in ipairs(enemy_slots) do
@@ -171,7 +173,7 @@ ABILITIES = {
     end
   },
 
-  ["Athena"] = {
+  ["The Magician"] = {
     onPlay = function(card, c)
       if c ~= card and card.owner == c.owner then
         card.power = card.power + 1
@@ -179,13 +181,13 @@ ABILITIES = {
     end
   },
 
-  ["Apollo"] = {
+  ["The Star"] = {
     onReveal = function(card)
       card.owner.extra = card.owner.extra + 1
     end
   },
 
-  ["Hephaestus"] = {
+  ["The Alchemist"] = {
     onReveal = function(card)
       for i=1,2 do
         local c = card.owner.hand[math.ceil(math.random(#card.owner.hand))]
@@ -194,7 +196,7 @@ ABILITIES = {
     end
   },
 
-  ["Persephone"] = {
+  ["The Void"] = {
     onReveal = function(card)
       local weakest = card.owner.hand[1]
       local index = 1
@@ -214,7 +216,7 @@ ABILITIES = {
     end
   },
 
-  ["Prometheus"] = {
+  ["The Seer"] = {
     onReveal = function(card)
       local enemy = card.owner == game.player and game.opponent or game.player
       local stolen = enemy.deck:deal()
@@ -223,7 +225,7 @@ ABILITIES = {
     end
   },
 
-  ["Pandora"] = {
+  ["The Tower"] = {
     onReveal = function(card)
       local slots = card.owner == game.player and card.field.player_slots or card.field.opponent_slots
       if #slots == 1 then
@@ -232,7 +234,7 @@ ABILITIES = {
     end
   },
 
-  ["Icarus"] = {
+  ["The Flame"] = {
     onEoT = function(card)
       card.power = card.power + 1
       if card.power > 7 then
@@ -241,7 +243,7 @@ ABILITIES = {
     end
   },
 
-  ["Iris"] = {
+  ["The High Priestess"] = {
     onEoT = function(card)
       for _, field in ipairs(game.board.fields) do
         local slotList = card.owner == game.player and field.player_slots or field.opponent_slots
@@ -254,7 +256,7 @@ ABILITIES = {
     end
   },
 
-  ["Nyx"] = {
+  ["The Shadow"] = {
     onReveal = function(card)
       local slots = card.owner == game.player and card.field.player_slots or card.field.opponent_slots
       local toRemove = {}
@@ -270,7 +272,7 @@ ABILITIES = {
     end
   },
 
-  ["Atlas"] = {
+  ["Ten of Wands"] = {
     onEoT = function(card)
       local slots = card.owner == game.player and card.field.player_slots or card.field.opponent_slots
       if #slots >= 4 then
@@ -279,7 +281,7 @@ ABILITIES = {
     end
   },
 
-  ["Daedalus"] = {
+  ["The Architect"] = {
     onReveal = function(card)
       for _, field in ipairs(game.board.fields) do
         local wooden_cow = cardData[1]
@@ -288,14 +290,13 @@ ABILITIES = {
     end
   },
 
-  ["Helios"] = {
+  ["The Eclipse"] = {
     onEoT = function(card)
-      print(tostring(card.owner))
       card.field:removeCard(card.owner, card)
     end
   },
 
-  ["Mnemosyne"] = {
+  ["The Mind"] = {
     onReveal = function(card)
       local lastPlayed = card.owner.lastPlayedCard
       if lastPlayed then

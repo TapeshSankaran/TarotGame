@@ -1,6 +1,7 @@
 -- Field class
 
-local Player = "player"
+local Player = require "player"
+local Anim   = require "anim"
 
 Field = {}
 Field.__index = Field
@@ -10,20 +11,29 @@ function Field:new(x, y, endX, endY)
         player_slots = {},
         opponent_slots = {},
         position = Vector(x, y),
-        end_position = Vector(endX, endY)
+        dimensions= Vector(endX, endY)
     }, self)
 end
 
 function Field:addCard(player, card)
-    local slots = player.name == "Player" and self.player_slots or self.opponent_slots
-    local height = player.name == "Player" and self.position.y+0.6*self.end_position.y or self.position.y+self.end_position.y*0.1
-    if #slots < 4 then
-        table.insert(slots, card)
-        card.position = Vector(self.position.x + self.end_position.x*(#slots-1)/4, height)
-        card.field = self
-        return true
-    end
-    return false
+  local end_pos = self.position + self.dimensions
+  local height = player.name == "Player" and end_pos.y - img_height * scale  or self.position.y
+  local slots = player.name == "Player" and self.player_slots or self.opponent_slots
+  if #slots < 4 then
+    table.insert(slots, card)
+    
+    card.position = Vector(self.position.x + self.dimensions.x*(#slots-1)/4, height)
+    card.field = self
+    
+    table.insert(anim_manager, {
+      anim = Anim:new(beamImg, 48, 48, 20, 2, 4),
+      x = card.position.x+img_width * scale/2,
+      y = card.position.y+img_height * scale/2
+    })
+    
+    return true
+  end
+  return false
 end
 
 function Field:removeCard(player, card)
@@ -33,8 +43,14 @@ function Field:removeCard(player, card)
     local index = indexOf(slots, card)
     table.remove(slots, index)
     table.insert(player.discard_pile, card)
-    card.position = Vector(-100, -100)
     
+    table.insert(anim_manager, {
+      anim = Anim:new(ghostImg, 48, 64, 15),
+      x = card.position.x+img_width * scale/2,
+      y = card.position.y
+    })
+  
+    card.position = Vector(-100, -100)
     self:refreshCards(player)
     
     return card
@@ -46,6 +62,13 @@ function Field:emptyCardSlots(player)
   local slots = player.name == "Player" and self.player_slots or self.opponent_slots
   for i=1,#slots do  
     local card = table.remove(slots)
+    
+    table.insert(anim_manager, {
+        anim = Anim:new(ghostImg, 48, 64, 15),
+        x = card.position.x+img_width * scale/2,
+        y = card.position.y+img_height * scale/2
+    })
+    
     table.insert(player.discard_pile, card)
     if ABILITIES[card.name] and ABILITIES[card.name].onDiscard then
       ABILITIES[card.name].onDiscard(card)
@@ -62,10 +85,11 @@ function Field:isWinning(player)
 end
 
 function Field:refreshCards(player)
+  local end_pos = self.position + self.dimensions
+  local height = player.name == "Player" and end_pos.y - img_height * scale  or self.position.y
   local slots = player.name == "Player" and self.player_slots or self.opponent_slots
-  local height = player.name == "Player" and self.position.y+0.6*self.end_position.y or self.position.y+self.end_position.y*0.1
   for i, card in ipairs(slots) do
-    card.position = Vector(self.position.x + self.end_position.x*(i-1)/4, height)
+    card.position = Vector(self.position.x + self.dimensions.x*(i-1)/4, height)
   end
 end
 
@@ -122,38 +146,56 @@ function Field:calculatePower()
 end
 
 function Field:isOver(mouseX, mouseY)
-  local width = self.end_position.x
-  local height = self.end_position.y
+  local width = self.dimensions.x
+  local height = self.dimensions.y
   --local height = self.sprite:getHeight() * scale
   return mouseX > self.position.x and mouseX < self.position.x + width and
         mouseY > self.position.y and mouseY < self.position.y + height
 end
 
 function Field:draw()
-  local bevel = 10
-  love.graphics.setColor(COLORS.DARKER_GREEN)
-  love.graphics.rectangle("fill", self.position.x-bevel, self.position.y-bevel, self.end_position.x+bevel*2, self.end_position.y+bevel)
-  love.graphics.setColor(COLORS.WHITE)
+  local end_pos = self.position + self.dimensions
+  local bevel = Vector(width * 0.003, height * 0.003)
 
-  for i=1,4 do
-    if self.player_slots[i] ~= nil then
+  -- Background Panel --
+  love.graphics.setColor((COLORS.BLACK * 0.5):rgb())
+  love.graphics.rectangle("fill", 
+    self.position.x - bevel.x, self.position.y - bevel.y, 
+    self.dimensions.x + bevel.x * 2, self.dimensions.y + bevel.y * 2
+  )
+
+  love.graphics.setColor(COLORS.WHITE:rgb())
+
+  -- Slot Size --
+  local slotWidth = self.dimensions.x / 4
+  local slotScaleX = scale
+  local cardWidth = emptyCard:getWidth() * scale
+
+  -- Player Slots (bottom) -- 
+  for i = 1, 4 do
+    local x = self.position.x + (i - 1) * slotWidth + (slotWidth - cardWidth) / 2
+    local y = end_pos.y - img_height * scale
+    if self.player_slots[i] then
       self.player_slots[i]:draw()
     else
-      love.graphics.setColor(COLORS.DARK_GREEN)
-      love.graphics.draw(emptyCard, self.position.x+((i-1)/4)*self.end_position.x, self.position.y+0.6*self.end_position.y, 0, scale, scale)
-      love.graphics.setColor(COLORS.WHITE)
+      love.graphics.setColor(COLORS.PURPLE:rgb())
+      love.graphics.draw(emptyCard, x, y, 0, scale, scale)
     end
   end
-  
-  for i=1,4 do
-    if self.opponent_slots[i] ~= nil then
+
+  -- Opponent Slots (top) --
+  for i = 1, 4 do
+    local x = self.position.x + (i - 1) * slotWidth + (slotWidth - cardWidth) / 2
+    local y = self.position.y
+    if self.opponent_slots[i] then
       self.opponent_slots[i]:draw()
     else
-      love.graphics.setColor(COLORS.DARK_GREEN)
-      love.graphics.draw(emptyCard, self.position.x+((i-1)/4)*self.end_position.x, self.position.y+self.end_position.y*0.1, 0, scale, scale)
-      love.graphics.setColor(COLORS.WHITE)
+      love.graphics.setColor(COLORS.PURPLE:rgb())
+      love.graphics.draw(emptyCard, x, y, 0, scale, scale)
     end
   end
+
+  love.graphics.setColor(COLORS.WHITE:rgb())
 end
 
 return Field

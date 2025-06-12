@@ -1,7 +1,7 @@
 
 -- Tapesh Sankaran
 -- CMPM 121
--- 4-29-2025
+-- 6-11-2025
 
 io.stdout:setvbuf("no")
 
@@ -23,6 +23,9 @@ function love.load()
   
   -- Read CSV --
   cardData = read_csv(FILE_LOCATIONS.CSV)
+  
+  -- Create Animations --
+  createAnims()
 
   -- Create Game --
   game = Game:new()
@@ -34,6 +37,8 @@ end
 function love.draw()
   
   game:draw()
+  
+  drawFX()
   
   dragged_card_draw()
 end

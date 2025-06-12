@@ -9,10 +9,10 @@ function System_Set()
   love.graphics.setDefaultFilter("nearest", "nearest")
   
   -- Set Dimentions for Window --
-  love.window.setMode(width, height)
+  love.window.setMode(width, height, {fullscreen = isFull})
   
   -- Set Color --
-  love.graphics.setBackgroundColor(COLORS.DARK_GREEN)
+  love.graphics.setBackgroundColor(COLORS.BLACK:rgb())
   
   -- SET RANDOM SEED --
   math.randomseed(seed)

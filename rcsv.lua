@@ -9,6 +9,7 @@ function read_csv(filename)
         end
         table.insert(data, row)
     end
+    table.remove(data, 1)
     file:close()
     return data
 end

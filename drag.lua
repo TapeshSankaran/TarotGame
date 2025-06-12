@@ -1,6 +1,7 @@
 
 local Config = "conf"
 local Player = "player"
+local Anim   = require "anim"
 
 -- Checks if mouse is pressed --
 local mousePressed = false
@@ -10,7 +11,7 @@ local draggableCard = nil
 local is_muted = false
 -- Checker for win state --
 local not_won = true
-
+-- Substate for round anim --
 local substate = "standby"
 
 -- UPDATE FUNCTION --
@@ -21,6 +22,7 @@ function love.update(dt)
   if draggableCard then
     draggableCard:update(dt, mouseX, mouseY)
   end
+  
   if game.state == "ai_turn" then
     game:submitTurn()
     game.state = "wait_for_flip"
@@ -79,9 +81,18 @@ function love.update(dt)
     cont_over = false
   end
 
-  -- Check win state --
-  -- (empty) --
-
+  for _, fx in ipairs(anim_manager) do
+    fx.anim:update(dt)
+  end
+  
+  for _, field in ipairs(game.board.fields) do
+    for _, card in ipairs(field.player_slots) do
+      card:animUpdate(dt)
+    end
+    for _, card in ipairs(field.opponent_slots) do
+      card:animUpdate(dt)
+    end
+  end
 end
 
 -- WHEN MOUSE PRESSED --
@@ -97,11 +108,21 @@ function love.mousepressed(x, y, button, istouch, presses)
     game.state = "ai_turn"
   end
   
-    -- New Game Button click functionality --
-  if button == 1 and cont_button_isOver(x, y) and not mousePressed and hasWon then
-    restartGame()
+    -- Continue Button click functionality --
+  if button == 1 and cont_button_isOver(x, y) and not mousePressed then
+    
+    -- Restart Game --
+    if hasWon then
+      restartGame()
+    end
+    
+    -- Start Game --
+    if game.state == "start" then
+      game.state = "player_turn"
+    end
+    
   end
-  
+
   mousePressed = false
 end
 
@@ -128,21 +149,20 @@ function stop_drag(x, y)
     draggableCard = nil  
 end
 
--- DRAWING DRAGGED CARD --
-function dragged_card_draw() 
-  love.graphics.setColor(COLORS.GOLD)
-  if draggableCard ~= nil then
-    draggableCard:draw()
-  end
-end
-
--- CHECK IF OVER END TURN BUTTON -- 
-function end_button_isOver(mouseX, mouseY)
-  local end_sx = endButton:getWidth() * end_scale
-  local end_sy = endButton:getHeight() * end_scale
+function createAnims()
   
-  return mouseX > end_x and mouseX < end_x + end_sx and
-           mouseY > end_y and mouseY < end_y + end_sy
+  local ghost = Anim:new(
+    ghostImg,
+    48, 64,
+    15
+  )
+  table.insert(anim_manager, {
+    anim = ghost,
+    x = 0,
+    y = 0
+  })
+  
+  
 end
 
 -- RESTART GAME --
@@ -157,9 +177,19 @@ function restartGame()
 
 end
 
+-- CHECK IF OVER END TURN BUTTON -- 
+function end_button_isOver(mouseX, mouseY)
+  local end_sx = endButton:getWidth() * end_scale
+  local end_sy = endButton:getHeight() * end_scale
+  
+  return mouseX > end_x and mouseX < end_x + end_sx and
+           mouseY > end_y and mouseY < end_y + end_sy
+end
+
+
 -- CHECK IF OVER CONTINUE BUTTON -- 
 function cont_button_isOver(mouseX, mouseY)
-  local cont_sx = title_font:getWidth("Continue?")
+  local cont_sx = title_font:getWidth(game.state == "start" and "Play" or "Continue?")
   local cont_sy = title_font:getHeight()
   local cont_x  = (width - cont_sx) * 0.5
   local cont_y  = height*0.75
@@ -167,3 +197,21 @@ function cont_button_isOver(mouseX, mouseY)
   return mouseX > cont_x and mouseX < cont_x + cont_sx and
            mouseY > cont_y and mouseY < cont_y + cont_sy
 end
+
+-- DRAWING DRAGGED CARD --
+function dragged_card_draw() 
+  love.graphics.setColor(COLORS.GOLD:rgb())
+  if draggableCard ~= nil then
+    draggableCard:draw()
+  end
+  love.graphics.setColor(COLORS.WHITE:rgb())
+end
+
+-- DRAWING ANIM --
+function drawFX()
+  love.graphics.setColor(COLORS.WHITE:rgb())
+  for _, fx in ipairs(anim_manager) do
+    fx.anim:draw(fx.x, fx.y)
+  end
+end
+

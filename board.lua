@@ -6,8 +6,13 @@ Board = {}
 Board.__index = Board
 
 function Board:new(sx, sy, ex, ey)
+    local w = ex-sx
     return setmetatable({
-        fields = {Field:new(sx, sy, 0.3*(ex-sx), ey-sy), Field:new(sx+0.33*ex, sy, 0.3*(ex-sx), ey-sy), Field:new(sx+0.66*ex, sy, 0.3*(ex-sx), ey-sy)},
+        fields = {
+          Field:new(sx       , sy, 0.32*w, ey-sy), 
+          Field:new(sx+0.33*w, sy, 0.32*w, ey-sy), 
+          Field:new(sx+0.66*w, sy, 0.32*w, ey-sy)
+        },
         start_position = Vector(sx, sy),
         end_position = Vector(ex, ey),
     }, self)
