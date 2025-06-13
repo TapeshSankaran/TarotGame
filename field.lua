@@ -31,7 +31,8 @@ function Field:addCard(player, card)
       y = card.position.y+img_height * scale/2
     })
     
-    placeSFX:play()
+    local clone = placeSFX:clone()
+    clone:play()
     
     return true
   end
@@ -63,6 +64,7 @@ end
 function Field:emptyCardSlots(player)
   local slots = player.name == "Player" and self.player_slots or self.opponent_slots
   if #slots > 0 then
+    deathSFX:stop()
     deathSFX:play()
   end
   for i=1,#slots do  

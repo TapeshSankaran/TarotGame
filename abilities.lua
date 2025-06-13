@@ -294,6 +294,7 @@ ABILITIES = {
   ["The Eclipse"] = {
     onEoT = function(card)
       card.field:removeCard(card.owner, card)
+      deathSFX:stop()
       deathSFX:play()
     end
   },
