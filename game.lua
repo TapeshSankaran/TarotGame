@@ -118,13 +118,18 @@ function Game:createCard(cardData, faceUp)
   return card
 end
 
+function Game:playDeath()
+  deathSFX:play()
+end
+
 function Game:draw()
   love.graphics.setColor((COLORS.WHITE * 0.5):rgb())
   love.graphics.draw(background, 0, 0, 0, width/612, height/408)
   
   if self.state == "start" then
+    love.graphics.setColor(COLORS.PURPLE:rgb())
     love.graphics.setFont(title_font)
-    love.graphics.printf("Greek Slam", 0, height*0.5, width, "center")
+    love.graphics.printf("Tarot Game", 0, height*0.3, width, "center")
     
     local d_scale = cont_over and 0.5 or 1
     love.graphics.setColor((COLORS.BLUE*d_scale):rgb())

@@ -152,14 +152,17 @@ end
 function createAnims()
   
   local ghost = Anim:new(
-    ghostImg,
-    48, 64,
-    15
+    spiritImg,
+    40, 32,
+    15,
+    2, 2,
+    0,
+    false
   )
   table.insert(anim_manager, {
     anim = ghost,
-    x = 0,
-    y = 0
+    x = width/2,
+    y = height/2
   })
   
   

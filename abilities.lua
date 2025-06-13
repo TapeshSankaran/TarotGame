@@ -128,7 +128,7 @@ ABILITIES = {
     onReveal = function(card)
       for _, card in ipairs(game.action) do
         if card ~= nil then
-          card.faceUp = true
+          card:flip()
         end 
       end
       game.action = {}
@@ -239,6 +239,7 @@ ABILITIES = {
       card.power = card.power + 1
       if card.power > 7 then
         card.field:removeCard(card.owner, card)
+        game:playDeath()
       end
     end
   },
@@ -293,6 +294,7 @@ ABILITIES = {
   ["The Eclipse"] = {
     onEoT = function(card)
       card.field:removeCard(card.owner, card)
+      deathSFX:play()
     end
   },
 

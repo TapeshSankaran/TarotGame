@@ -32,22 +32,29 @@ end_scale = 0.15
 
    -- File Locations --
 FILE_LOCATIONS = {
+  -- Images --
   EMPTY = "Sprites/Empty.png",
   BACK  = "Sprites/Card Back.png",
   END   = "Sprites/end.png",
   BG    = "Sprites/background.jpg",
   
+  -- Sprite Sheets --
   GHOST  = "Sprites/Dark VFX 2/Dark VFX 2 (48x64).png",
   BEAM   = "Sprites/Holy VFX 02/Holy VFX 02.png",
   FIRE   = "Sprites/Holy VFX 01/Holy VFX 01 Repeatable.png",
-  POINTS = "Sprites/Holy VFX 01/Holy VFX 01 Impact.png",
+  POINTS = "Sprites/Holy VFX 01/Holy VFX 01 Impact.png",  
+  SPIRIT = "Sprites/Dark VFX 1/Dark VFX 1 (40x32).png",
   
+  -- Sound Effects --
+  PLACE = "SFX/placeCard.mp3",
+  DEATH = "SFX/cardDeath.mp3",
+
+  -- Card Sheet --
   CSV   = "Resources/Tapesh Sankaran Project 3 Card Table - Sheet1.csv",
   
+  -- Fonts --
   FONT1 = "Resources/Fighting Spirit 2 bold.otf",
   FONT2 = "Resources/JMH Typewriter-Thin.ttf",
-  
-
 }
 
    -- Colors --

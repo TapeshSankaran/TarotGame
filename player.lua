@@ -120,7 +120,7 @@ function Player:draw()
     end
     self.deck:draw()
   end
-  love.graphics.setColor(COLORS.DARKER_GREEN:rgb())
+  love.graphics.setColor((COLORS.PURPLE + 0.5*COLORS.WHITE):rgb())
   love.graphics.setFont(name_font)
   local y = self.name == "Opponent" and height*0.07 or -height*0.04
   --local x = self.name == "Opponent" and width*0.1 or width*0.9

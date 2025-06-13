@@ -17,8 +17,11 @@ ghostImg = love.graphics.newImage(FILE_LOCATIONS.GHOST)
 beamImg = love.graphics.newImage(FILE_LOCATIONS.BEAM)
 fireImg = love.graphics.newImage(FILE_LOCATIONS.FIRE)
 pointsImg = love.graphics.newImage(FILE_LOCATIONS.POINTS)
+spiritImg = love.graphics.newImage(FILE_LOCATIONS.SPIRIT)
 
-
+placeSFX = love.audio.newSource(FILE_LOCATIONS.PLACE, "static")
+deathSFX = love.audio.newSource(FILE_LOCATIONS.DEATH, "static")
+placeSFX:setVolume(2)
 
 name_font = love.graphics.newFont(FILE_LOCATIONS.FONT1, 14)
 title_font = love.graphics.newFont(FILE_LOCATIONS.FONT1, 28)

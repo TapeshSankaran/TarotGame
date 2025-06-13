@@ -3,7 +3,7 @@ require "conf"
 
 function System_Set() 
   -- Set Title of Window --
-  love.window.setTitle("Greek Slam")
+  love.window.setTitle("Tarot Game")
   
   -- Set Filter for Clearness --
   love.graphics.setDefaultFilter("nearest", "nearest")
