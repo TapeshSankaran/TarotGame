@@ -19,9 +19,16 @@ fireImg = love.graphics.newImage(FILE_LOCATIONS.FIRE)
 pointsImg = love.graphics.newImage(FILE_LOCATIONS.POINTS)
 spiritImg = love.graphics.newImage(FILE_LOCATIONS.SPIRIT)
 
-placeSFX = love.audio.newSource(FILE_LOCATIONS.PLACE, "static")
-deathSFX = love.audio.newSource(FILE_LOCATIONS.DEATH, "static")
-placeSFX:setVolume(2)
+placeSFX   = love.audio.newSource(FILE_LOCATIONS.PLACE, "static")
+deathSFX   = love.audio.newSource(FILE_LOCATIONS.DEATH, "static")
+revealSFX  = love.audio.newSource(FILE_LOCATIONS.REVEAL, "static")
+BGSFX      = love.audio.newSource(FILE_LOCATIONS.BGSFX, "static")
+whisperSFX = love.audio.newSource(FILE_LOCATIONS.WHISP, "static")
+whisperSFX:setVolume(0.005 * masterVolume * bgMusicVolume)
+BGSFX:setVolume(0.02 * masterVolume * bgMusicVolume)
+revealSFX:setVolume(1 * masterVolume * bgMusicVolume)
+deathSFX:setVolume(0.4 * masterVolume * effectsVolume)
+placeSFX:setVolume(0.10 * masterVolume * effectsVolume)
 
 name_font = love.graphics.newFont(FILE_LOCATIONS.FONT1, 14)
 title_font = love.graphics.newFont(FILE_LOCATIONS.FONT1, 28)
@@ -196,7 +203,7 @@ function Card:stopDrag(mouseX, mouseY)
         
         if card == nil then break end
         
-        field:addCard(game.player, self)
+        local passed = field:addCard(game.player, self)
       
         local c, onPlay = field:hasTrigger("onPlay", "both")
         if onPlay then

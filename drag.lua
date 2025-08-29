@@ -2,6 +2,9 @@
 local Config = "conf"
 local Player = "player"
 local Anim   = require "anim"
+local Slider = require "menuManager"
+local Sim    = require "sim"
+require "data_export"
 
 -- Checks if mouse is pressed --
 local mousePressed = false
@@ -18,24 +21,45 @@ local substate = "standby"
 function love.update(dt)
   local mouseX, mouseY = love.mouse.getPosition()
   
+  updateMenus()
+  
+  if not BGSFX:isPlaying() then
+    BGSFX:play()
+  end
+
+  if not whisperSFX:isPlaying() then
+    whisperSFX:play()
+  end
+  
+  whisperSFX:setVolume(0.01 * masterVolume * bgMusicVolume)
+  BGSFX:setVolume(0.04 * masterVolume * bgMusicVolume)
+  revealSFX:setVolume(2 * masterVolume * effectsVolume)
+  deathSFX:setVolume(0.8 * masterVolume * effectsVolume)
+  placeSFX:setVolume(0.20 * masterVolume * effectsVolume)
+  
   -- Update card position of card being dragged --
   if draggableCard then
     draggableCard:update(dt, mouseX, mouseY)
   end
   
+  local deltaTime = isPaused and 0 or dt
+  
   if game.state == "ai_turn" then
-    game:submitTurn()
+    local turn = game:submitTurn()
     game.state = "wait_for_flip"
     timer = 2
+    if isSim then
+      logEnemyTurn(turn)
+    end
   elseif game.state == "wait_for_flip" then
-    timer = timer - dt
+    timer = timer - deltaTime
     if timer <= 0 then
       substate = "stalled"
       game.state = "waiting"
       timer = 1
     end
   elseif game.state == "flipped" then
-    timer = timer - dt
+    timer = timer - deltaTime
     if timer <= 0 then
       game.state = "next_phase"
     end
@@ -45,17 +69,25 @@ function love.update(dt)
       game.state = "player_turn"
     end
   elseif game.state == "won" then
+    if isSim then
+      logWinner(result)
+      saveLog(log)
+    end
     timer = 2
     game.state = "winning"
   elseif game.state == "winning" then
-    timer = timer - dt
+    timer = timer - deltaTime
     if timer <= 0 then
-      hasWon = true
+      game.state = result
+      if isSim then
+        restartGame()
+        game.state = "player_turn"
+      end
     end
   end
   
   if substate == "stall" then
-    timer = timer - dt
+    timer = timer - deltaTime
     if timer <= 0 then
       substate = "stalled"
       game:activateReveal()
@@ -75,10 +107,8 @@ function love.update(dt)
     substate = "stall"
   end
   
-  if cont_button_isOver(mouseX, mouseY) then
-    cont_over = true
-  else
-    cont_over = false
+  if isSim then
+    simulateGame()
   end
 
   for _, fx in ipairs(anim_manager) do
@@ -95,8 +125,19 @@ function love.update(dt)
   end
 end
 
+function love.keypressed(key, scancode, isrepeat)
+  if key == "escape" then
+    isPaused = not isPaused
+  end
+  if key == "delete" then
+    clearLogs()
+  end
+end
+
 -- WHEN MOUSE PRESSED --
 function love.mousepressed(x, y, button, istouch, presses)
+  
+  menus_mousepressed(x, y, button)
   
   -- If left click and no card already being dragged --
   if button == 1 and draggableCard == nil and game.state == "player_turn" then
@@ -108,29 +149,39 @@ function love.mousepressed(x, y, button, istouch, presses)
     game.state = "ai_turn"
   end
   
-    -- Continue Button click functionality --
-  if button == 1 and cont_button_isOver(x, y) and not mousePressed then
-    
-    -- Restart Game --
-    if hasWon then
-      restartGame()
-    end
-    
-    -- Start Game --
-    if game.state == "start" then
-      game.state = "player_turn"
-    end
-    
-  end
-
   mousePressed = false
 end
 
 function love.mousereleased(x, y, button, istouch, presses)
+  menus_mousereleased(x, y, button)
   if draggableCard then
     stop_drag(x, y)
   end
 end
+
+function love.errorhandler(msg)
+  local traceback = debug.traceback(msg, 2)
+  print("Crash caught:", traceback)
+  local simulationLog = log
+  if simulationLog then
+    local success, err = pcall(function()
+      local json = require("dkjson")
+      local text = json.encode(simulationLog, { indent = true })
+      local time = os.date("%Y-%m-%d_%H-%M-%S")
+      local filename = "crash_log_" .. time .. ".json"
+      love.filesystem.write(filename, text)
+      print("Crash log saved to:", filename)
+    end)
+
+    if not success then
+      print("Failed to write crash log:", err)
+    end
+  end
+
+  -- Show the normal Love2D error screen
+  return love.errhand(msg)
+end
+
 
 -- START DRAGGING CARD --
 function start_drag(x, y)
@@ -166,18 +217,6 @@ function createAnims()
   })
   
   
-end
-
--- RESTART GAME --
-function restartGame()
-  math.randomseed(os.time())
-  
-  game = Game:new()
-  
-  ai = AI:new(game.opponent, game.board)
-  hasWon = false
-  cont_over = false
-
 end
 
 -- CHECK IF OVER END TURN BUTTON -- 

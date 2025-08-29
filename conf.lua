@@ -20,7 +20,9 @@ scale = 0.022
 seed = os.time() -- [default: 5 for testing, os.time() for main use]
 
    -- Target Points --
-target_points = 100 -- [default: 25] 
+target_points = 100 -- [default: 25]
+
+isSim = true
 
    -- End Button Options --
 end_x = width*0.9
@@ -46,8 +48,11 @@ FILE_LOCATIONS = {
   SPIRIT = "Sprites/Dark VFX 1/Dark VFX 1 (40x32).png",
   
   -- Sound Effects --
-  PLACE = "SFX/placeCard.mp3",
-  DEATH = "SFX/cardDeath.mp3",
+  PLACE  = "SFX/placeCard.mp3",
+  DEATH  = "SFX/cardDeath.mp3",
+  REVEAL = "SFX/revealCard.mp3",
+  BGSFX  = "SFX/backgroundSounds.mp3",
+  WHISP  = "SFX/whispers.mp3",
 
   -- Card Sheet --
   CSV   = "Resources/Tapesh Sankaran Project 3 Card Table - Sheet1.csv",
@@ -79,13 +84,47 @@ COLORS = {
   LIGHT_GOLD   = Color(1.00, .922, .502),
 }
 
+   -- Weights --
+ABILITY_WEIGHTS = {
+  onPlay = 0.7,
+  onDiscard = 0.6,
+  onReveal = 1.2,
+  onEoT = 1.4,
+  copy = 0.4,
+  buff = 1.7,
+  curse = 0.7,
+  sacrifice = 2.0,
+  move = 0.5
+}
+   -- Keys --
+ABILITY_KEYS = {
+  "onPlay",
+  "onReveal",
+  "onDiscard",
+  "onEoT",
+  "copy",
+  "buff",
+  "curse",
+  "sacrifice",
+  "move"
+}
+
+
 -- GLOBAL VARS --
 game = {}
 ai = {}
+pyAI = {}
 cardData = {}
 hasWon = false
 cont_over = false
 anim_manager = {}
+initActionSize = 0
+isPaused = false
+menu_manager = {}
+masterVolume = 1
+bgMusicVolume = 1
+effectsVolume = 1
+result = "unfinished"
 
 -- USEFUL FUNCTIONS --
 function indexOf(tbl, val)

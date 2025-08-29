@@ -10,27 +10,33 @@ local Sys      = require "sys-set"
 local Drag     = require "drag"
 local Read_CSV = require "rcsv"
 local Game     = require "game"
-local AI       = require "ai"
+local PyAI     = require "pyAI"
+local Sim    = require "sim"
+local Menu   = require "menuManager"
 
 local cardBuffer = {}
 
 -- LOAD FUNCTION --
 function love.load()
   
+  
+  
   -- Set Window and Random Seed --
   --     (from sys-set.lua)     --
   System_Set()
   
+  -- Menus --
+  createMenus()
+  
   -- Read CSV --
   cardData = read_csv(FILE_LOCATIONS.CSV)
-  
-  -- Create Animations --
-  createAnims()
 
   -- Create Game --
   game = Game:new()
   
-  ai = AI:new(game.opponent, game.board)
+  ai = PyAI:new(game.opponent, game.board)
+  
+  if isSim then makeSimPlayer() end
 end
 
 -- DRAW FUNCTION --
@@ -41,4 +47,6 @@ function love.draw()
   drawFX()
   
   dragged_card_draw()
+  
+  drawMenus()
 end

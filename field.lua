@@ -23,7 +23,7 @@ function Field:addCard(player, card)
     table.insert(slots, card)
     
     card.position = Vector(self.position.x + self.dimensions.x*(#slots-1)/4, height)
-    card.field = self
+    card.field = self 
     
     table.insert(anim_manager, {
       anim = Anim:new(beamImg, 48, 48, 20, 2, 4),
@@ -31,8 +31,8 @@ function Field:addCard(player, card)
       y = card.position.y+img_height * scale/2
     })
     
-    local clone = placeSFX:clone()
-    clone:play()
+    placeSFX:stop()
+    placeSFX:play()
     
     return true
   end
@@ -66,6 +66,9 @@ function Field:emptyCardSlots(player)
   if #slots > 0 then
     deathSFX:stop()
     deathSFX:play()
+    local clone = revealSFX:clone()
+    clone:setPitch(1+(initActionSize)*0.14)
+    clone:play()
   end
   for i=1,#slots do  
     local card = table.remove(slots)
@@ -144,12 +147,19 @@ function Field:hasTriggers(trigger, target)
 end
 
 function Field:calculatePower()
-  local function sumPower(cards)
-    local total = 0
-    for _, c in ipairs(cards) do total = total + c.power end
-    return total
+  return self:getPower(game.player), self:getPower(game.opponent)
+end
+
+function Field:getPower(player)
+  local slots = player == game.player and self.player_slots or self.opponent_slots
+  local total = 0
+  for i = 1, 4 do
+    local card = slots[i]
+    if card and card.power then
+      total = total + tonumber(card.power)
+    end
   end
-  return sumPower(self.player_slots), sumPower(self.opponent_slots)
+  return total
 end
 
 function Field:isOver(mouseX, mouseY)

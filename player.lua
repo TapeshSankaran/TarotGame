@@ -37,6 +37,7 @@ function Player:new(name, x, y)
         mana = 1,
         extra = 0,
         position = Vector(x, y),
+        lastPlayedCard = {}
     }, self)
 end
 
@@ -92,8 +93,8 @@ end
 function Player:removeCard(index)
     local card = self.hand[index]
     if card then
-        self.mana = self.mana - card.cost
         table.remove(self.hand, index)
+        self:respaceCards()
         return card
     end
     return nil
@@ -123,7 +124,6 @@ function Player:draw()
   love.graphics.setColor((COLORS.PURPLE + 0.5*COLORS.WHITE):rgb())
   love.graphics.setFont(name_font)
   local y = self.name == "Opponent" and height*0.07 or -height*0.04
-  --local x = self.name == "Opponent" and width*0.1 or width*0.9
 
   love.graphics.printf(self.name, 0, self.position.y+y, width, "center")
   love.graphics.setColor(COLORS.BLUE:rgb())
