@@ -11,9 +11,9 @@ function Game:new()
   return setmetatable({
     turn = 1,
     targetPoints = target_points,
-    player = Player:new("Player", width/2, height*0.79),
+    player = Player:new("Player", width/2, height*0.85),
     opponent = Player:new("Opponent", width/2, -height*0.005),
-    board = Board:new(width*0.01, height*0.2, width*1.01, height*0.71),
+    board = Board:new(width*0.1, height*0.1, width*0.9, height*0.8),
     extra = 0,
     state = "start",
     action = {}
@@ -123,12 +123,17 @@ function Game:playDeath()
 end
 
 function Game:draw()
-  love.graphics.setColor((COLORS.WHITE * 0.5):rgb())
-  love.graphics.draw(background, 0, 0, 0, width/612, height/408)
-    
-  self.board:draw()
-  self.player:draw()
-  self.opponent:draw()
+  local dt = love.timer.getDelta()
+  love.graphics.setColor((COLORS.BLACK * 0.5):rgb())
+  love.graphics.rectangle("fill", 0, 0, width, height)
+  --love.graphics.draw(background, 0, 0, 0, width/612, height/408)
+  
+  love.graphics.setColor(COLORS.BLUE:rgb())
+  love.graphics.draw(crystalImg, 0, height*0.22)
+
+  self.board:draw(dt)
+  self.player:draw(dt)
+  self.opponent:draw(dt)
   if game.state == "player_turn" then
     love.graphics.setColor(COLORS.WHITE:rgb())
     love.graphics.draw(endButton, end_x, end_y, 0, end_scale, end_scale)

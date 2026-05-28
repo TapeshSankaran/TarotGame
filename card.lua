@@ -18,6 +18,9 @@ beamImg = love.graphics.newImage(FILE_LOCATIONS.BEAM)
 fireImg = love.graphics.newImage(FILE_LOCATIONS.FIRE)
 pointsImg = love.graphics.newImage(FILE_LOCATIONS.POINTS)
 spiritImg = love.graphics.newImage(FILE_LOCATIONS.SPIRIT)
+crystalImg = love.graphics.newImage(FILE_LOCATIONS.CRYSTAL)
+orbImg = love.graphics.newImage(FILE_LOCATIONS.ORB)
+smokeImg = love.graphics.newImage(FILE_LOCATIONS.SMOKE)
 
 placeSFX   = love.audio.newSource(FILE_LOCATIONS.PLACE, "static")
 deathSFX   = love.audio.newSource(FILE_LOCATIONS.DEATH, "static")
@@ -79,55 +82,6 @@ function Card:trigger(trigger)
   if ABILITIES[self.name] and ABILITIES[self.name][trigger] then
     ABILITIES[self.name][trigger](self)
   end
-end
-
--- DRAW CARD --
-function Card:draw(dynamic_scale)
-  dynamic_scale = dynamic_scale or scale
-  local cardWidth  = img_width * dynamic_scale
-  local cardHeight = img_height * dynamic_scale
-  local mouseOver = self:isMouseOver(love.mouse.getX(), love.mouse.getY())
-  local isPlayerCard = self.owner == game.player or self.owner == "Player"
-  local d_scale = 1
-  local g_color = COLORS.WHITE
-  
-  if isPlayerCard and tonumber(self.cost) > tonumber(game.player.mana) and self.field == nil then
-    d_scale = 0.5
-  end
-  
-  if self.faceUp and draggableCard == nil and mouseOver and game.state == "player_turn" and isPlayerCard then
-    g_color = COLORS.LIGHT_GOLD
-  end
-  
-  love.graphics.setColor(((COLORS.WHITE * g_color) * d_scale):rgb())
-  if self.faceUp == true then
-    love.graphics.draw(emptyCard, self.position.x, self.position.y, 0, dynamic_scale, dynamic_scale)
-    love.graphics.draw(self.sprite, self.position.x+cardWidth/2, self.position.y+cardHeight*0.15, 0, 2.2*0.05, 2.2*0.05, self.sprite:getWidth()/2)
-    
-    love.graphics.setColor(((COLORS.PURPLE * 2.5 * g_color) * d_scale):rgb())
-    love.graphics.setFont(name_font)
-    love.graphics.printf(self.name, self.position.x, self.position.y, cardWidth, "center")
-    
-    love.graphics.setColor(((COLORS.BLUE * g_color) * d_scale):rgb())
-    love.graphics.printf(self.cost, self.position.x+cardWidth*0.1, self.position.y+cardHeight*0.47, cardWidth, "left")
-    
-    local opacity = self.field and (self.power - 5)/5 or 0
-    local x = tonumber(self.power) < 10 and 0.88 or 0.85
-    love.graphics.setColor((COLORS.BLUE * Color(1, 1, 1, opacity)):rgb())
-    self.anim:draw(self.position.x+cardWidth*x, self.position.y+cardHeight*0.47)
-    
-    love.graphics.setColor(((COLORS.DARK_RED * g_color) * d_scale):rgb())
-    love.graphics.printf(self.power, self.position.x, self.position.y+cardHeight*0.47, cardWidth*0.92, "right")
-    
-    
-    
-    love.graphics.setColor(((COLORS.PURPLE*2 * g_color) * d_scale):rgb())
-    love.graphics.setFont(detail_font)
-    love.graphics.printf(self.ability, self.position.x+cardWidth*0.075, self.position.y+cardHeight*0.62, cardWidth*0.9, "center")
-  else
-    love.graphics.draw(faceDown, self.position.x, self.position.y, 0, dynamic_scale, dynamic_scale)
-  end
-  love.graphics.setColor(COLORS.WHITE:rgb())
 end
 
 -- START DRAGGING CARD --
@@ -238,6 +192,55 @@ function Card:isMouseOver(mouseX, mouseY)
     --local height = self.sprite:getHeight() * scale
     return mouseX > self.position.x and mouseX < self.position.x + width and
            mouseY > self.position.y and mouseY < self.position.y + height
+end
+
+-- DRAW CARD --
+function Card:draw(dt, dynamic_scale)
+  dynamic_scale = dynamic_scale or scale
+  local cardWidth  = img_width * dynamic_scale
+  local cardHeight = img_height * dynamic_scale
+  local mouseOver = self:isMouseOver(love.mouse.getX(), love.mouse.getY())
+  local isPlayerCard = self.owner == game.player or self.owner == "Player"
+  local d_scale = 1
+  local g_color = COLORS.WHITE
+  
+  if isPlayerCard and tonumber(self.cost) > tonumber(game.player.mana) and self.field == nil then
+    d_scale = 0.5
+  end
+  
+  if self.faceUp and draggableCard == nil and mouseOver and game.state == "player_turn" and isPlayerCard then
+    g_color = COLORS.LIGHT_GOLD
+  end
+  
+  love.graphics.setColor(((COLORS.WHITE * g_color) * d_scale):rgb())
+  if self.faceUp == true then
+    love.graphics.draw(emptyCard, self.position.x, self.position.y, 0, dynamic_scale, dynamic_scale)
+    love.graphics.draw(self.sprite, self.position.x+cardWidth/2, self.position.y+cardHeight*0.15, 0, 2.2*0.05, 2.2*0.05, self.sprite:getWidth()/2)
+    
+    love.graphics.setColor(((COLORS.PURPLE * 2.5 * g_color) * d_scale):rgb())
+    love.graphics.setFont(name_font)
+    love.graphics.printf(self.name, self.position.x, self.position.y, cardWidth, "center")
+    
+    love.graphics.setColor(((COLORS.BLUE * g_color) * d_scale):rgb())
+    love.graphics.printf(self.cost, self.position.x+cardWidth*0.1, self.position.y+cardHeight*0.47, cardWidth, "left")
+    
+    local opacity = self.field and (self.power - 5)/5 or 0
+    local x = tonumber(self.power) < 10 and 0.88 or 0.85
+    love.graphics.setColor((COLORS.BLUE * Color(1, 1, 1, opacity)):rgb())
+    self.anim:draw(self.position.x+cardWidth*x, self.position.y+cardHeight*0.47)
+    
+    love.graphics.setColor(((COLORS.DARK_RED * g_color) * d_scale):rgb())
+    love.graphics.printf(self.power, self.position.x, self.position.y+cardHeight*0.47, cardWidth*0.92, "right")
+    
+    
+    
+    love.graphics.setColor(((COLORS.PURPLE*2 * g_color) * d_scale):rgb())
+    love.graphics.setFont(detail_font)
+    love.graphics.printf(self.ability, self.position.x+cardWidth*0.075, self.position.y+cardHeight*0.62, cardWidth*0.9, "center")
+  else
+    love.graphics.draw(faceDown, self.position.x, self.position.y, 0, dynamic_scale, dynamic_scale)
+  end
+  love.graphics.setColor(COLORS.WHITE:rgb())
 end
 
 return Card

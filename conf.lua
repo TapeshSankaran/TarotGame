@@ -14,7 +14,7 @@ img_width = 4320
 img_height = 7680
 
    -- Scale of Cards --
-scale = 0.022
+scale = 0.017
 
    -- Set Random Seed --
 seed = os.time() -- [default: 5 for testing, os.time() for main use]
@@ -22,7 +22,7 @@ seed = os.time() -- [default: 5 for testing, os.time() for main use]
    -- Target Points --
 target_points = 100 -- [default: 25]
 
-isSim = true
+isSim = false
 
    -- End Button Options --
 end_x = width*0.9
@@ -35,10 +35,13 @@ end_scale = 0.15
    -- File Locations --
 FILE_LOCATIONS = {
   -- Images --
-  EMPTY = "Sprites/Empty.png",
-  BACK  = "Sprites/Card Back.png",
-  END   = "Sprites/end.png",
-  BG    = "Sprites/background.jpg",
+  EMPTY   = "Sprites/Empty.png",
+  BACK    = "Sprites/Card Back.png",
+  END     = "Sprites/end.png",
+  BG      = "Sprites/background.jpg",
+  CRYSTAL = "Sprites/ManaCrystal.png",
+  ORB     = "Sprites/Orb.png",
+  SMOKE   = "Sprites/OrbSmoke.png",
   
   -- Sprite Sheets --
   GHOST  = "Sprites/Dark VFX 2/Dark VFX 2 (48x64).png",
@@ -64,12 +67,16 @@ FILE_LOCATIONS = {
 
    -- Colors --
 COLORS = {
-  BLACK        = Color(0, 0, 0),
-  GREY         = Color(0.5, 0.5, 0.5),
-  WHITE        = Color(1, 1, 1),
+  TRUE_BLACK   = Color(0, 0, 0),
+
+  BLACK        = Color(49/2, 54/2, 56/2),
+  GREY         = Color(49, 54, 56),
+  WHITE        = Color(224, 223, 213),
   
-  DARK_RED     = Color(0.7, 0, 0),
-  RED          = Color(1, .3, .3),
+  DARK_RED     = Color(151/4, 21/4, 12/4),
+  RED          = Color(151, 21, 12),
+  ORANGE       = Color(221, 96, 18),
+  YELLOW       = Color(241, 178, 76),
   
   PURPLE       = Color(0.5, 0.2, 0.5),
   
@@ -139,4 +146,8 @@ function indexOfName(tbl, val)
     if v.name == val then return i end
   end
   return nil  -- Not found
+end
+
+function love.conf(t)
+   t.console = true
 end

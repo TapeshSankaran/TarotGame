@@ -13,13 +13,11 @@ local Game     = require "game"
 local PyAI     = require "pyAI"
 local Sim    = require "sim"
 local Menu   = require "menuManager"
-
+local Color  = require "color"
 local cardBuffer = {}
 
 -- LOAD FUNCTION --
 function love.load()
-  
-  
   
   -- Set Window and Random Seed --
   --     (from sys-set.lua)     --
@@ -34,8 +32,8 @@ function love.load()
   -- Create Game --
   game = Game:new()
   
-  ai = PyAI:new(game.opponent, game.board)
-  
+  ai = PyAI:new(game.opponent)
+
   if isSim then makeSimPlayer() end
 end
 

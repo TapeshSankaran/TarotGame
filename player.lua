@@ -1,9 +1,11 @@
 -- Player class
 
 Deck   = require "deck"
-
+Anim   = require "anim"
 Player = {}
 Player.__index = Player
+
+theta = 0
 
 function Player:new(name, x, y)
     
@@ -37,7 +39,8 @@ function Player:new(name, x, y)
         mana = 1,
         extra = 0,
         position = Vector(x, y),
-        lastPlayedCard = {}
+        lastPlayedCard = {},
+        power_anim = Anim:new(fireImg, 32, 32, 15, 3, 3, 3.14/1.75, true)
     }, self)
 end
 
@@ -114,19 +117,76 @@ function Player:respaceCards()
   end
 end
 
-function Player:draw()
+function Player:draw(dt)
   if self.name ~= "Opponent" then
     for _, card in ipairs(self.hand) do
       card:draw()
     end
     self.deck:draw()
   end
-  love.graphics.setColor((COLORS.PURPLE + 0.5*COLORS.WHITE):rgb())
-  love.graphics.setFont(name_font)
-  local y = self.name == "Opponent" and height*0.07 or -height*0.04
 
-  love.graphics.printf(self.name, 0, self.position.y+y, width, "center")
+  theta = theta + dt * 0.1
+
+  local is_opp = self.name == "Opponent"
+  local main_color = is_opp and COLORS.RED or COLORS.PURPLE
+  local glass_color = main_color * Color(1, 1, 1, 0.7)
+  local smoke_color = main_color * Color(1, 1, 1, 0.5)
+  
+  local bg_color = COLORS.BLACK
+  local avatar = is_opp and "O" or "P"
+  
+  local y = is_opp and height*0.01 or height*0.99
+  local r = 0
+  local bevel = 0.02
+  local w = 1 - bevel * 2
+  
+  local anchor = orbImg:getWidth() / 2
+
+  -- Avatar Bubble
+  love.graphics.setColor(bg_color:rgb())
+  love.graphics.circle("fill", width * 0.01, y, width * 0.103)
+  
+  local outline_color = is_opp and COLORS.GREY or COLORS.WHITE
+  love.graphics.setColor(outline_color:rgb())
+  love.graphics.circle("line", width * 0.01, y, width * 0.103)
+  
+  local offset = is_opp and 0 or 80
+  love.graphics.setFont(title_font)
+  love.graphics.printf(avatar, width * bevel, y - offset, width * w, "left", 0, 2, 2)
+
+  love.graphics.setColor(glass_color:rgb())
+  love.graphics.draw(orbImg, width * 0.01, y, r, 0.5, 0.5, anchor, anchor)
+
+  love.graphics.setColor(smoke_color:rgb())
+  love.graphics.draw(smokeImg, width * 0.01, y, r - theta, 0.5, 0.5, anchor, anchor)
+  love.graphics.draw(smokeImg, width * 0.01, y, r + 90 + theta, 0.5, 0.5, anchor, anchor)  
+
+  -- Power Bubble
+  bg_color = COLORS.YELLOW
+  smoke_color = ((main_color * 1.66) + (COLORS.ORANGE * 0.33)) * Color(1, 1, 1, 0.5)
+
+  love.graphics.setColor(bg_color:rgb())
+  love.graphics.circle("fill", width * 0.99, y, width * 0.103)
+  
+  local outline_color = is_opp and COLORS.GREY or COLORS.WHITE
+  love.graphics.setColor(outline_color:rgb())
+  love.graphics.circle("line", width * 0.99, y, width * 0.103)
+  
+  local offset = is_opp and 0 or 80
+  love.graphics.setFont(title_font)
+  love.graphics.printf(avatar, width * bevel, y - offset, width * w, "right", 0, 2, 2)
+
+  love.graphics.setColor(smoke_color:rgb())
+  love.graphics.draw(smokeImg, width * 0.99, y, r-90 + theta, 0.5, 0.5, anchor, anchor)
+  love.graphics.draw(smokeImg, width * 0.99, y, r - theta, 0.5, 0.5, anchor, anchor)
+
+  love.graphics.setColor(glass_color:rgb())
+  love.graphics.draw(orbImg, width * 0.99, y, r, 0.5, 0.5, anchor, anchor)
+
+
+
   love.graphics.setColor(COLORS.BLUE:rgb())
+  love.graphics.setFont(name_font)
   love.graphics.printf("Mana: " .. self.mana, self.position.x-width*0.1, self.position.y+y, 64, "right", 0, 1, 1, name_font:getWidth("Mana: " .. self.mana))
   love.graphics.setColor(COLORS.DARK_GOLD:rgb())
   love.graphics.printf("Points: " .. self.points, self.position.x+width*0.075, self.position.y+y, 64*2, "left")

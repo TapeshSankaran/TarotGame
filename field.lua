@@ -2,16 +2,18 @@
 
 local Player = require "player"
 local Anim   = require "anim"
+local NUM_CARDS = 3
 
 Field = {}
 Field.__index = Field
 
-function Field:new(x, y, endX, endY)
+function Field:new(id, x, y, w, h)
     return setmetatable({
+        placement = id,
         player_slots = {},
         opponent_slots = {},
         position = Vector(x, y),
-        dimensions= Vector(endX, endY)
+        dimensions= Vector(w, h)
     }, self)
 end
 
@@ -19,10 +21,10 @@ function Field:addCard(player, card)
   local end_pos = self.position + self.dimensions
   local height = player.name == "Player" and end_pos.y - img_height * scale  or self.position.y
   local slots = player.name == "Player" and self.player_slots or self.opponent_slots
-  if #slots < 4 then
+  if #slots < 3 then
     table.insert(slots, card)
     
-    card.position = Vector(self.position.x + self.dimensions.x*(#slots-1)/4, height)
+    card.position = Vector(self.position.x + self.dimensions.x*(#slots-1)/3, height)
     card.field = self 
     
     table.insert(anim_manager, {
@@ -170,44 +172,62 @@ function Field:isOver(mouseX, mouseY)
         mouseY > self.position.y and mouseY < self.position.y + height
 end
 
-function Field:draw()
+function Field:draw(dt)
   local end_pos = self.position + self.dimensions
-  local bevel = Vector(width * 0.003, height * 0.003)
+  local bevel = Vector(0, 0)--Vector(width * 0.003, height * 0.003)
 
   -- Background Panel --
-  love.graphics.setColor((COLORS.BLACK * 0.5):rgb())
+  love.graphics.setColor(COLORS.DARK_RED:rgb())
   love.graphics.rectangle("fill", 
+    self.position.x - bevel.x, self.position.y - bevel.y, 
+    self.dimensions.x + bevel.x * 2, self.dimensions.y + bevel.y * 2
+  )
+  -- outline is yellow if middle field, else white
+  local line_color = self.placement == 0 and COLORS.YELLOW or COLORS.ORANGE
+  love.graphics.setColor(line_color:rgb())
+  love.graphics.setLineWidth(2)
+  love.graphics.rectangle("line", 
     self.position.x - bevel.x, self.position.y - bevel.y, 
     self.dimensions.x + bevel.x * 2, self.dimensions.y + bevel.y * 2
   )
 
   love.graphics.setColor(COLORS.WHITE:rgb())
 
+  local cardWidth = img_width * scale
+  local cardHeight = img_height * scale
+  
   -- Slot Size --
-  local slotWidth = self.dimensions.x / 4
-  local slotScaleX = scale
-  local cardWidth = emptyCard:getWidth() * scale
+  local fair_width = game.board.size.W*0.33
+  local slotWidth = ((fair_width - cardWidth) / NUM_CARDS)
 
+  local centerX = (self.dimensions.x - (NUM_CARDS * slotWidth)) / 2
+  local x_offset   = img_width * scale * 0.1
   -- Player Slots (bottom) -- 
-  for i = 1, 4 do
-    local x = self.position.x + (i - 1) * slotWidth + (slotWidth - cardWidth) / 2
-    local y = end_pos.y - img_height * scale
+  for i = 1, NUM_CARDS do
+    local x = self.position.x + (i - 1) * slotWidth + (slotWidth - cardWidth) / 2 + centerX + self.placement * x_offset
+    local y = end_pos.y - cardHeight * 1.5
+    if i == 2 then
+      y = y - img_height * scale * 0.25
+    end
     if self.player_slots[i] then
       self.player_slots[i]:draw()
     else
-      love.graphics.setColor(COLORS.PURPLE:rgb())
+      love.graphics.setColor(COLORS.GREY:rgb())
       love.graphics.draw(emptyCard, x, y, 0, scale, scale)
     end
   end
 
   -- Opponent Slots (top) --
-  for i = 1, 4 do
-    local x = self.position.x + (i - 1) * slotWidth + (slotWidth - cardWidth) / 2
-    local y = self.position.y
+  for i = 1, NUM_CARDS do
+    local x = self.position.x + (i - 1) * slotWidth + (slotWidth - cardWidth) / 2 + centerX + self.placement * x_offset
+    local y = self.position.y + cardHeight * 0.5
+    if i == 2 then
+      y = y + cardHeight * 0.25
+    end
     if self.opponent_slots[i] then
       self.opponent_slots[i]:draw()
     else
-      love.graphics.setColor(COLORS.PURPLE:rgb())
+      love.graphics.setColor(COLORS.GREY:rgb())
       love.graphics.draw(emptyCard, x, y, 0, scale, scale)
     end
   end

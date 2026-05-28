@@ -10,8 +10,8 @@ local color_mt = {
   end,
 
   __mul = function(a, b)
-    if type(a) == "number" then return Color(a * b.r, a * b.g, a * b.b, a * b.a)
-    elseif type(b) == "number" then return Color(b * a.r, b * a.g, b * a.b, b * a.a) end
+    if type(a) == "number" then return Color(a * b.r, a * b.g, a * b.b, b.a)
+    elseif type(b) == "number" then return Color(b * a.r, b * a.g, b * a.b, a.a) end
     return Color(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a)
   end,
 
@@ -21,6 +21,11 @@ local color_mt = {
 setmetatable(Color, {
   __call = function(_, r, g, b, a)
     a = a and a or 1
+    if r > 1 or g > 1 or b > 1 then
+      r = r / 255
+      g = g / 255
+      b = b / 255
+    end
     local color = { r = r, g = g, b = b, a = a }
     setmetatable(color, color_mt)
     return color
